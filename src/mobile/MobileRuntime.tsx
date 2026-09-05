@@ -1,21 +1,14 @@
 import { useEffect, type PropsWithChildren } from "react";
 import { MobileDeviceProvider, useMobileDevice } from "./Device";
-import { KeyboardDock, KeyboardProvider, useKeyboard } from "./Keyboard";
-import { PhoneFrame } from "./PhoneFrame";
-import { HomeIndicator, StatusBar } from "./components";
+import { KeyboardProvider, useKeyboard } from "./Keyboard";
 
 export function MobileRuntime({ children }: PropsWithChildren) {
   return (
-    <MobileDeviceProvider>
-      <PhoneFrame>
-        <KeyboardProvider>
-          <KeyboardPreview />
-          <StatusBar />
-          <MobileAppViewport>{children}</MobileAppViewport>
-          <HomeIndicator />
-          <KeyboardDock />
-        </KeyboardProvider>
-      </PhoneFrame>
+    <MobileDeviceProvider standalone>
+      <KeyboardProvider>
+        <KeyboardPreview />
+        <MobileAppViewport>{children}</MobileAppViewport>
+      </KeyboardProvider>
     </MobileDeviceProvider>
   );
 }
@@ -29,7 +22,9 @@ function MobileAppViewport({ children }: PropsWithChildren) {
       className="mobile-app-viewport"
       data-keyboard-visible={keyboard.visible ? "true" : "false"}
       data-platform={device.platform}
+      data-standalone-runtime="true"
       data-testid="mobile-app-viewport"
+      style={{ "--device-safe-area-bottom": "0px" } as React.CSSProperties}
     >
       {children}
     </div>

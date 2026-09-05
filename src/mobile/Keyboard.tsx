@@ -35,7 +35,7 @@ type KeyboardInputProps = InputHTMLAttributes<HTMLInputElement> & {
 const KeyboardContext = createContext<KeyboardContextValue | null>(null);
 
 export function KeyboardProvider({ children }: PropsWithChildren) {
-  const { device } = useMobileDevice();
+  const { device, standalone } = useMobileDevice();
   const [visible, setVisible] = useState(false);
   const [dragOffset, setRawDragOffset] = useState(0);
   const [isDragging, setDragging] = useState(false);
@@ -57,6 +57,11 @@ export function KeyboardProvider({ children }: PropsWithChildren) {
       setDragOffset,
       setDragging,
       show: (element) => {
+        if (standalone) {
+          setFocusedElement(element ?? null);
+          setVisible(false);
+          return;
+        }
         setRawDragOffset(0);
         setDragging(false);
         setFocusedElement(element ?? null);
@@ -69,7 +74,7 @@ export function KeyboardProvider({ children }: PropsWithChildren) {
         setVisible(false);
       },
     }),
-    [dragOffset, focusedElement, fullHeight, isDragging, visible],
+    [dragOffset, focusedElement, fullHeight, isDragging, standalone, visible],
   );
 
   return <KeyboardContext.Provider value={value}>{children}</KeyboardContext.Provider>;
@@ -87,22 +92,25 @@ export function useKeyboard() {
 
 export function useKeyboardInsets() {
   const keyboard = useKeyboard();
-  const { device } = useMobileDevice();
+  const { device, standalone } = useMobileDevice();
   const reservesAndroidNavigation = device.platform === "android" && !keyboard.visible;
 
   return {
     keyboardHeight: keyboard.height,
     keyboardFullHeight: keyboard.fullHeight,
     keyboardDragging: keyboard.isDragging,
-    bottomInset: reservesAndroidNavigation
+    bottomInset: standalone
+      ? 0
+      : reservesAndroidNavigation
       ? 0
       : device.platform === "android"
         ? keyboard.height
         : Math.max(device.geometry.safeArea.bottom, keyboard.height),
-    availableHeight:
-      device.geometry.screen.height -
-      keyboard.height -
-      (reservesAndroidNavigation ? device.geometry.safeArea.bottom : 0),
+    availableHeight: standalone
+      ? Math.max(0, window.innerHeight - keyboard.height)
+      : device.geometry.screen.height -
+        keyboard.height -
+        (reservesAndroidNavigation ? device.geometry.safeArea.bottom : 0),
     isKeyboardVisible: keyboard.visible,
   };
 }

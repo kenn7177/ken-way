@@ -1,5 +1,5 @@
 :root { --paper:#faf9f6; --ink:#262823; --muted:#878a7e; --line:#e6e6df; --soft:#f1f0ea; --green:#2f5e4a; --red:#ac4636; --gold:#a37e23; }
-[data-phone-screen]:has(.paper-dark) { --paper:#232721; --ink:#e9ede4; --muted:#a9b1a0; --line:#3c4436; --soft:#30372c; --green:#b2d1b8; --red:#f2aa99; --gold:#ddc87f; }
+.paper-app.paper-dark,[data-phone-screen]:has(.paper-dark) { --paper:#232721; --ink:#e9ede4; --muted:#a9b1a0; --line:#3c4436; --soft:#30372c; --green:#b2d1b8; --red:#f2aa99; --gold:#ddc87f; }
 .paper-app { position:absolute; inset:0; color:var(--ink); background:#faf9f6; font-family:'PingFang SC','Microsoft YaHei',ui-sans-serif,system-ui,sans-serif; font-size:14px; line-height:1.5; }
 .paper-app *, .paper-sheet-content *, .journey-content * { box-sizing:border-box; }
 .paper-app button, .paper-sheet-content button, .journey-content button { border:0; background:none; color:inherit; -webkit-tap-highlight-color:transparent; touch-action:manipulation; transition:background 160ms,color 160ms,transform 180ms cubic-bezier(.2,.8,.2,1); }
