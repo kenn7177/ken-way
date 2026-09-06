@@ -36,6 +36,6 @@ Viewport: 390 × 844 CSS px for the mobile flow check. The app is intentionally 
 
 - This verifies the browser-visible mobile viewport and key experience paths, not every physical browser safe-area combination.
 - The browser reported a Motion reduced-motion advisory during the intentional preference check, rather than an app exception. No application console errors were observed in this pass.
-- Public deployment was not updated in this pass; final public visitor-link verification remains a publish-stage check.
+- The published `?demo=1` link was opened after deployment and showed the independent sample banner, six actions and 1600 example glow without console errors.
 
 final result: passed
