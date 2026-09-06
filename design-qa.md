@@ -1,40 +1,41 @@
-# Design QA
+# Design QA — settings simplification and visitor experience
 
-source visual truth path: `C:/Users/kingdom/Desktop/photo_2026-09-05_15-25-56.png` (694 x 1280 source pixels)
-implementation screenshot path: `C:/Users/kingdom/Documents/Codex/2026-09-05/web-telegram-runner-telegram-30-telegram/outputs/paper-actions/today-1x.png` (393 x 852 phone screen capture)
-viewport: 1400 x 1200 browser; mobile screen 393 x 852 CSS px; deviceScaleFactor 1 for the final capture
-state: Today tab, initial local store, six open actions, grouped list, filter row, fixed composer and three tab navigation visible
+Source visual truth: `C:/Users/kingdom/Desktop/photo_2026-09-05_15-25-56.png` (694 × 1280). It defines the paper-white list language, fine separators, quiet green accent, compact mobile rhythm and line-icon density. It does not specify a settings or visitor-experience screen; those are intentional extensions of the established visual system.
 
-## Full-view comparison evidence
+Browser-rendered implementation evidence:
 
-The source is a dense 694 x 1280 portrait task list. The normalized implementation keeps the same key structure inside the app-owned phone screen: compact header with utility icons, weekly summary, grouped progress rows, segmented filter controls, date buckets, thin action rows, an add-action affordance and fixed bottom navigation. The implementation uses a slightly warmer paper background and green accent to connect the reward product to action completion; this is an intentional product adaptation.
+- `C:/Users/kingdom/Documents/Codex/2026-09-05/web-telegram-runner-telegram-30-telegram/outputs/settings-demo/01-experience-panel-reduced.png`
+- `C:/Users/kingdom/Documents/Codex/2026-09-05/web-telegram-runner-telegram-30-telegram/outputs/settings-demo/02-dark-rules-sheet.png`
 
-## Focused region comparison evidence
+Viewport: 390 × 844 CSS px for the mobile flow check. The app is intentionally unframed; no device bezel, status chrome or simulated home indicator is part of the current target.
 
-The upper summary and first list bucket were checked in the same phone-sized crop. The implementation keeps readable 14–16px action copy, thin separators, grouped progress bars and priority edge colors. The reference contains image-export and PDF utility icons; the prototype uses Radix outline icons for the available product actions. No representational image assets are present in the source state, so no image-generation asset was required.
+## State and interactions checked
 
-## Primary interactions tested
+1. Personal settings now shows exactly five actions: dark mode, reduced motion, export, experience/share, and about/rules.
+2. Experience/share opens a separate bottom sheet. Local preview correctly says the copied link is only available on the current computer; successful copy feedback appears only after the copy call resolves.
+3. `?demo=1` opens a session-isolated sample with the banner, six actions, split work, a timed action, 1600 example glow and reward samples.
+4. The demo timer can be started and then skipped through the explicit demo-only control; it does not award XP until the normal completion action is taken.
+5. Resetting demo data requires an inline confirmation. After confirmation the sample returns to six open actions, zero XP and 1600 example glow. Exiting demo returns to the existing personal record.
+6. The personal budget editor rejects a ¥100 value when the active star wish costs ¥500 and retains the existing ¥800 value.
+7. Deep theme plus reduced motion was checked with the About/Rules sheet open. The sheet inherits the same dark paper palette and has an explicit close button.
 
-- Completing an eligible action updates the count, gives exactly 24 XP and exposes 启程.
-- Opening 启程 reveals a pending reward in a bottom sheet.
-- 掷硬币 persists a 正面/反面 result; a second toss is allowed once, then 收下/这次先放下 remains available.
-- 收下 moves the reward to 身边; 去看看奖励 opens the reward tab.
-- Selecting a kept reward and 确认已兑现 moves it to 过往.
-- 新建行动 opens a draggable bottom sheet with keyboard-linked fields.
-- Filters, group selection, sorting, dark mode, reduced motion and local JSON export are wired.
+## Required fidelity surfaces
 
-## Findings
-
-No actionable P0/P1/P2 visual or interaction findings remain after the implementation pass. The reference screenshot is a standalone task-list view, while the prototype is a full local reward workflow; this explains the added reward tab and journey sheets.
+- **Typography:** primary setting labels are 16px; explanations use 14px with stronger muted text than the earlier 11px copy. Sheet titles retain the established heavier hierarchy.
+- **Spacing and layout rhythm:** two compact setting groups replace the former long settings feed. The five actions fit within the first screen at the checked mobile viewport. The unframed runtime uses the visible viewport instead of the previous 54px/852px device geometry for its root and sheet height.
+- **Colors and tokens:** paper white, thin borders and green action color remain unchanged. The dark variables now reach document-level portal content, so sheets and the page share one palette.
+- **Image quality:** no new decorative or representational images were introduced. Existing RMB coin assets remain unchanged.
+- **Copy:** “体验模式 · 示例数据”, reset confirmation, export labels and local-preview wording explicitly distinguish visitors’ sample records from personal records.
 
 ## Comparison history
 
-1. Initial capture showed the app scroll region starting at the top of the phone runtime, which let the header overlap the summary. The scroll top and bottom were corrected to account for the fixed header, composer and navigation.
-2. Re-capture showed the summary, filters, action rows and fixed navigation aligned without overlap. The same capture was used for the focused comparison above.
+1. Before this pass, the settings page repeated brand copy and onboarding, mixed budget and trial logic with preferences, and did not provide a separate visitor environment. The earlier audit screenshots recorded this state.
+2. The current pass removed the duplicate settings content, moved budget and star configuration to the reward pool, replaced trial with experience/share, and captured the reduced-motion experience panel plus dark rules sheet. No actionable P0/P1/P2 visual drift remains against the paper-list design language.
 
-## Follow-up polish
+## Residual limits
 
-- Capture a second screenshot after completing an action and while the coin sheet is open for a tighter visual comparison of the reward state.
-- Validate the Pixel 10 preset after the user has reviewed the iPhone preset.
+- This verifies the browser-visible mobile viewport and key experience paths, not every physical browser safe-area combination.
+- The browser reported a Motion reduced-motion advisory during the intentional preference check, rather than an app exception. No application console errors were observed in this pass.
+- Public deployment was not updated in this pass; final public visitor-link verification remains a publish-stage check.
 
 final result: passed

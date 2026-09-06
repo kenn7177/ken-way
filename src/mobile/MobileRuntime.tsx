@@ -1,6 +1,7 @@
 import { useEffect, type PropsWithChildren } from "react";
 import { MobileDeviceProvider, useMobileDevice } from "./Device";
 import { KeyboardProvider, useKeyboard } from "./Keyboard";
+import { useViewport } from "../viewport";
 
 export function MobileRuntime({ children }: PropsWithChildren) {
   return (
@@ -16,6 +17,7 @@ export function MobileRuntime({ children }: PropsWithChildren) {
 function MobileAppViewport({ children }: PropsWithChildren) {
   const { device } = useMobileDevice();
   const keyboard = useKeyboard();
+  const viewport = useViewport();
 
   return (
     <div
@@ -24,7 +26,11 @@ function MobileAppViewport({ children }: PropsWithChildren) {
       data-platform={device.platform}
       data-standalone-runtime="true"
       data-testid="mobile-app-viewport"
-      style={{ "--device-safe-area-bottom": "0px" } as React.CSSProperties}
+      style={{
+        "--device-safe-area-bottom": "env(safe-area-inset-bottom, 0px)",
+        position: "fixed", top: viewport.top, left: viewport.left,
+        width: viewport.width, height: viewport.height, right: "auto", bottom: "auto",
+      } as React.CSSProperties}
     >
       {children}
     </div>

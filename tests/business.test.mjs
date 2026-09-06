@@ -8,6 +8,9 @@ import {
   exchangeReward,
   initialStore,
   redeemReward,
+  saveBudget,
+  activateWish,
+  saveTemplate,
   tossCoin,
 } from '../src/model.ts';
 import {
@@ -130,12 +133,50 @@ test('formal mode grants at most five draws per day while still recording later 
   );
 });
 
-test('trial mode grants today-created actions and bypasses the five-draw cap', () => {
+test('explicit demo mode grants today-created actions and bypasses the five-draw cap', () => {
   let store = storeWith({ trial: true, actions: Array.from({ length: 6 }, (_, i) => action({ id: `trial-${i}`, created: TODAY })) });
-  for (let i = 0; i < 6; i += 1) store = completeAction(store, `trial-${i}`, TODAY, NOW);
+  for (let i = 0; i < 6; i += 1) store = completeAction(store, `trial-${i}`, TODAY, NOW, 'demo');
   assert.equal(store.completions.every((completion) => completion.eligible), true);
-  for (const completion of store.completions) store = drawReward(store, completion.id, TODAY, 9999, 0);
+  for (const completion of store.completions) store = drawReward(store, completion.id, TODAY, 9999, 0, 'demo');
   assert.equal(store.rewards.length, 6);
+});
+
+test('legacy trial=true does not grant normal-mode bypass', () => {
+  let store = storeWith({ trial: true, actions: Array.from({ length: 6 }, (_, i) => action({ id: `legacy-${i}`, created: TODAY })) });
+  for (let i = 0; i < 6; i += 1) store = completeAction(store, `legacy-${i}`, TODAY, NOW);
+  assert.equal(store.completions.every((completion) => completion.eligible === false), true);
+});
+
+test('budget accepts only valid two-decimal amounts and keeps the old store on rejection', () => {
+  const store = storeWith({ budget: 800 });
+  for (const amount of [-1, Number.NaN, 1.001, 600]) {
+    const before = structuredClone(store);
+    if (amount === 600) {
+      assert.equal(saveBudget(store, amount).budget, amount);
+    } else {
+      assert.throws(() => saveBudget(store, amount));
+      assert.deepEqual(store, before);
+    }
+  }
+});
+
+test('wish activation requires an active five-star template within the budget', () => {
+  const store = storeWith({ budget: 100 });
+  assert.throws(() => activateWish(store, 'wish-1'), /预算|费用/);
+  const inactive = { ...store, templates: store.templates.map((template) => template.id === 'wish-1' ? { ...template, active: false } : template) };
+  assert.throws(() => activateWish(inactive, 'wish-1'));
+  const valid = activateWish(storeWith({ budget: 600 }), 'wish-1');
+  assert.equal(valid.wishId, 'wish-1');
+});
+
+test('existing template rarity is immutable and active wish edits stay within budget', () => {
+  const store = storeWith({ budget: 100 });
+  const four = store.templates.find((template) => template.id === 'four-1');
+  assert.throws(() => saveTemplate(store, { ...four, rarity: 5 }), /星级|稀有/);
+  const wish = store.templates.find((template) => template.id === 'wish-1');
+  const before = structuredClone(store);
+  assert.throws(() => saveTemplate(store, { ...wish, cost: 101 }), /预算|费用/);
+  assert.deepEqual(store, before);
 });
 
 test('a grant from a previous day expires and cannot be drawn today', () => {

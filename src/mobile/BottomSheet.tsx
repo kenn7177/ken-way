@@ -1,7 +1,9 @@
 import { type PropsWithChildren, useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useDrag } from "@use-gesture/react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Cross2Icon } from "@radix-ui/react-icons";
+import { useViewport } from "../viewport";
 import { useKeyboard, useKeyboardInsets } from "./Keyboard";
 import { useMobileDevice } from "./Device";
 
@@ -11,6 +13,7 @@ type BottomSheetProps = PropsWithChildren<{
   title: string;
   description?: string;
   snap?: number;
+  reducedMotion?: boolean;
 }>;
 
 export function BottomSheet({
@@ -19,9 +22,13 @@ export function BottomSheet({
   title,
   description,
   snap = 0.72,
+  reducedMotion = false,
   children,
 }: BottomSheetProps) {
-  const { device } = useMobileDevice();
+  const { device, standalone } = useMobileDevice();
+  const viewport = useViewport();
+  const systemReduced = useReducedMotion();
+  const reduce = reducedMotion || Boolean(systemReduced);
   const keyboard = useKeyboard();
   const { keyboardHeight } = useKeyboardInsets();
   const [dragY, setDragY] = useState(0);
@@ -63,10 +70,12 @@ export function BottomSheet({
     },
   );
 
-  const sheetHeight = Math.round(device.geometry.screen.height * snap);
-  const effectiveHeight = Math.max(260, sheetHeight - Math.min(keyboardHeight, 180));
+  const sheetHeight = Math.round((standalone ? viewport.height : device.geometry.screen.height) * snap);
+  const effectiveHeight = standalone
+    ? Math.min(Math.max(260, sheetHeight), Math.max(0, viewport.height - 12))
+    : Math.max(260, sheetHeight - Math.min(keyboardHeight, 180));
   const sheetBottom =
-    device.platform === "android"
+    standalone ? Math.max(0, window.innerHeight - viewport.height - viewport.top) : device.platform === "android"
       ? Math.max(device.geometry.safeArea.bottom, keyboardHeight)
       : keyboardHeight;
   const portalContainer = undefined;
@@ -86,7 +95,7 @@ export function BottomSheet({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.16 }}
+                  transition={{ duration: reduce ? 0 : 0.16 }}
                 />
               </Dialog.Overlay>
               <Dialog.Content asChild forceMount>
@@ -94,12 +103,15 @@ export function BottomSheet({
                   className="bottom-sheet"
                   data-testid="bottom-sheet"
                   style={{
+                    position: standalone ? "fixed" : "absolute",
                     bottom: sheetBottom,
                     maxHeight: effectiveHeight,
+                    minHeight: Math.min(260, effectiveHeight),
+                    touchAction: standalone ? "auto" : "none",
                   }}
-                  initial={{ y: effectiveHeight + 36 }}
-                  animate={{ y: dragY }}
-                  exit={{
+                  initial={reduce ? { opacity: 0 } : { y: effectiveHeight + 36 }}
+                  animate={{ y: dragY, opacity: 1 }}
+                  exit={reduce ? { opacity: 0, transition: { duration: 0 } } : {
                     y: effectiveHeight + 36,
                     transition: {
                       type: "spring",
@@ -108,7 +120,7 @@ export function BottomSheet({
                       mass: 1.05,
                     },
                   }}
-                  transition={{
+                  transition={reduce ? { duration: 0 } : {
                     type: "spring",
                     stiffness: 500,
                     damping: 43,
@@ -121,6 +133,7 @@ export function BottomSheet({
                   <div className="sheet-header">
                     <Dialog.Title className="sheet-title">{title}</Dialog.Title>
                     {description ? <Dialog.Description className="sheet-description">{description}</Dialog.Description> : null}
+                    <Dialog.Close className="sheet-close" aria-label="关闭面板"><Cross2Icon aria-hidden="true" /></Dialog.Close>
                   </div>
                   <div className="sheet-content">{children}</div>
                 </motion.div>
