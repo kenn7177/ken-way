@@ -264,33 +264,6 @@ export default function Prototype() {
             )}
             {tab === "today" && (
               <>
-                <SectionLabel title="这一周" />
-                <div className="week-stats">
-                  <Metric value={weekly} label="本周完成" />
-                  <Metric value={doneToday * 24} label="今日 XP" />
-                  <Metric value={store.glow} label="已有微光" />
-                </div>
-                <SectionLabel title="按分组" detail={`${openCount} 件行动，慢慢来`} />
-                <div className="group-progress">
-                  {groups.map((g) => {
-                    const list = actions.filter((a) => a.group === g);
-                    const count = list.filter((a) => completed(store, a, today)).length;
-                    return (
-                      <button
-                        key={g}
-                        className={group === g ? "selected" : ""}
-                        aria-pressed={group === g}
-                        onClick={() => setGroup(group === g ? null : g)}
-                      >
-                        <span>{g}</span>
-                        <progress max={list.length || 1} value={count} />
-                        <small>
-                          {count}/{list.length}
-                        </small>
-                      </button>
-                    );
-                  })}
-                </div>
                 <div className="filter-row">
                   <div className="segmented" aria-label="行动筛选">
                     {(["全部", "今天", "未完成", "已完成"] as Filter[]).map((f) => (
@@ -348,6 +321,35 @@ export default function Prototype() {
                   )}
                 </div>
                 <p className="quiet-note">行动有确定的价值，随机只是额外庆祝。</p>
+                <section className="today-overview" aria-label="本周行动概览">
+                  <SectionLabel title="这一周" />
+                  <div className="week-stats">
+                    <Metric value={weekly} label="本周完成" />
+                    <Metric value={doneToday * 24} label="今日 XP" />
+                    <Metric value={store.glow} label="已有微光" />
+                  </div>
+                  <SectionLabel title="按分组" detail={`${openCount} 件行动，慢慢来`} />
+                  <div className="group-progress">
+                    {groups.map((g) => {
+                      const list = actions.filter((a) => a.group === g);
+                      const count = list.filter((a) => completed(store, a, today)).length;
+                      return (
+                        <button
+                          key={g}
+                          className={group === g ? "selected" : ""}
+                          aria-pressed={group === g}
+                          onClick={() => setGroup(group === g ? null : g)}
+                        >
+                          <span>{g}</span>
+                          <progress max={list.length || 1} value={count} />
+                          <small>
+                            {count}/{list.length}
+                          </small>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
               </>
             )}
             {tab === "rewards" && (
@@ -984,7 +986,7 @@ function Journey({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <StarIcon />
+            <span className="brain-response" aria-hidden="true" />
             <p>给刚才的一小步，一点回响。</p>
           </motion.div>
         ) : (
@@ -1013,14 +1015,14 @@ function Journey({
                       transition={{ duration: 1.05, ease: "easeInOut" }}
                     >
                       <img
-                        className="coin-side coin-side-flower"
-                        src="/assets/coin/renminbi-flower.png"
+                        className="coin-side coin-side-eagle"
+                        src="/assets/coin/liberty-eagle.png"
                         alt=""
                         aria-hidden="true"
                       />
                       <img
-                        className="coin-side coin-side-yuan"
-                        src="/assets/coin/renminbi-one-yuan.png"
+                        className="coin-side coin-side-portrait"
+                        src="/assets/coin/liberty-portrait.png"
                         alt=""
                         aria-hidden="true"
                       />
