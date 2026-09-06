@@ -986,7 +986,42 @@ function Journey({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <span className="brain-response" aria-hidden="true" />
+            <div className="seal-stage" aria-hidden="true">
+              <div className="confetti">
+                <span className="confetti-piece c0" />
+                <span className="confetti-piece c1" />
+                <span className="confetti-piece c2" />
+                <span className="confetti-piece c3" />
+                <span className="confetti-piece c4" />
+                <span className="confetti-piece c5" />
+                <span className="confetti-piece c6" />
+                <span className="confetti-piece c7" />
+                <span className="confetti-piece c8" />
+                <span className="confetti-piece c9" />
+              </div>
+              <motion.div
+                className="seal"
+                initial={{ scale: 0.25, rotate: -18, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                transition={reduced ? { duration: 0.2 } : { type: "spring", stiffness: 340, damping: 13, mass: 0.9 }}
+              >
+                <svg viewBox="0 0 80 80" width="84" height="84" aria-hidden="true">
+                  <circle cx="40" cy="40" r="33" fill="none" stroke="var(--red)" strokeWidth="2.6" />
+                  <circle cx="40" cy="40" r="26" fill="none" stroke="var(--red)" strokeWidth="1.1" opacity=".55" />
+                  <text
+                    x="40"
+                    y="50"
+                    textAnchor="middle"
+                    fontSize="24"
+                    fontWeight="700"
+                    fontFamily="Georgia,'Songti SC','Noto Serif SC','SimSun',serif"
+                    fill="var(--red)"
+                  >
+                    记
+                  </text>
+                </svg>
+              </motion.div>
+            </div>
             <p>给刚才的一小步，一点回响。</p>
           </motion.div>
         ) : (
