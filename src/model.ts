@@ -62,6 +62,7 @@ export type Store = {
   trial: boolean;
   reduced: boolean;
   dark: boolean;
+  silverPaper?: boolean;
   onboarded: boolean;
 };
 

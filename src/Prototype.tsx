@@ -107,14 +107,17 @@ export default function Prototype() {
   useEffect(() => {
     const root = document.documentElement;
     const oldTheme = root.dataset.paperTheme;
+    const oldStyle = root.dataset.paperStyle;
     const oldMotion = root.dataset.paperReduced;
     root.dataset.paperTheme = store.dark ? "dark" : "light";
+    root.dataset.paperStyle = store.silverPaper === true ? "silver" : "classic";
     root.dataset.paperReduced = String(reduced);
     return () => {
       if (oldTheme === undefined) delete root.dataset.paperTheme; else root.dataset.paperTheme = oldTheme;
+      if (oldStyle === undefined) delete root.dataset.paperStyle; else root.dataset.paperStyle = oldStyle;
       if (oldMotion === undefined) delete root.dataset.paperReduced; else root.dataset.paperReduced = oldMotion;
     };
-  }, [store.dark, reduced]);
+  }, [store.dark, store.silverPaper, reduced]);
   const demoUrl = new URL("/?demo=1", window.location.origin).href;
   const localOnly = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
   function switchMode(next: AppMode) {
@@ -254,7 +257,7 @@ export default function Prototype() {
         <header className="paper-header">
           <div>
             <h1>
-              {tab === "today" ? "行动清单" : tab === "rewards" ? "留下来的好运" : "设置"}
+              {tab === "today" ? "行间" : tab === "rewards" ? "留下来的好运" : "设置"}
             </h1>
             {tab !== "settings" && <p>{tab === "today" ? `${openCount} OPEN` : `${store.rewards.filter((r) => r.status === "kept").length} KEPT`}</p>}
           </div>
@@ -321,16 +324,15 @@ export default function Prototype() {
                   {!filtered.length && (
                     <Empty
                       icon={<CheckIcon />}
-                      title={filter === "已完成" ? "还没有完成记录" : "这一页很轻"}
+                      title={filter === "已完成" ? "还没有完成记录" : "暂无行动"}
                       copy={
                         filter === "已完成"
-                          ? "完成一件小事，它就会被记在这里。"
-                          : "换个筛选，或者为今天添加一小步。"
+                          ? "完成的行动会留在这里。"
+                          : "换个筛选，或添加一小步。"
                       }
                     />
                   )}
                 </div>
-                <p className="quiet-note">行动有确定的价值，随机只是额外庆祝。</p>
                 <section className="today-overview" aria-label="本周行动概览">
                   <SectionLabel title="这一周" />
                   <div className="week-stats">
@@ -338,7 +340,7 @@ export default function Prototype() {
                     <Metric value={doneToday * 24} label="今日 XP" />
                     <Metric value={store.glow} label="已有微光" />
                   </div>
-                  <SectionLabel title="按分组" detail={`${openCount} 件行动，慢慢来`} />
+                  <SectionLabel title="按分组" detail={`${openCount} 件行动`} />
                   <div className="group-progress">
                     {groups.map((g) => {
                       const list = actions.filter((a) => a.group === g);
@@ -365,7 +367,6 @@ export default function Prototype() {
             {tab === "rewards" && (
               <>
                 <div className="reward-balance">
-                  <span>把期待留给生活</span>
                   <strong>
                     {store.glow}
                     <small> 微光</small>
@@ -472,7 +473,7 @@ export default function Prototype() {
                           <div>
                             <h2>{r.title}</h2>
                             <p>
-                              {r.rarity} 星 · {labelForReward[r.status]} · {r.date.slice(5)}
+                              {r.rarity} 星 · {rewardTab === "过往" ? `${labelForReward[r.status]} · ` : ""}{r.date.slice(5)}
                             </p>
                           </div>
                           <ChevronRightIcon />
@@ -502,6 +503,8 @@ export default function Prototype() {
               </>
             )}
             {tab === "settings" && <SettingsPanel dark={store.dark} reduced={store.reduced} mode={mode}
+            silverPaper={store.silverPaper === true}
+            onToggleSilverPaper={() => update((s) => ({ ...s, silverPaper: s.silverPaper !== true }))}
             onToggleDark={() => update((s) => ({ ...s, dark: !s.dark }))}
             onToggleReduced={() => update((s) => ({ ...s, reduced: !s.reduced }))}
             onExport={exportData} onExperience={() => openSheet("experience")} onAbout={() => openSheet("rules")} />}
@@ -513,7 +516,6 @@ export default function Prototype() {
             <button onClick={() => editAction()}>
               <PlusIcon />
               <span>为今天留下一小步</span>
-              <kbd>新增行动</kbd>
             </button>
           </div>
         )}
@@ -586,7 +588,6 @@ export default function Prototype() {
                       : sheet === "budget" ? "本月奖励预算"
                       : "行动的足迹"
           }
-          description={sheet === "action" ? "把开始的门槛放低一点。" : "按照自己的节奏，慢慢来。"}
           snap={sheet === "action" || sheet === "template" ? 0.91 : 0.8}
         >
           <div className="paper-sheet-content">
@@ -648,11 +649,10 @@ export default function Prototype() {
                       setSheet(null);
                     }}
                   >
-                    {item}
+                    {item === "手动" ? "添加顺序" : item}
                     {sort === item && <CheckIcon />}
                   </button>
                 ))}
-                <p className="field-help">手动排序保持清单中的添加顺序。</p>
               </>
             )}
             {sheet === "rules" && <><div className="about-summary"><h2>行间</h2><p>一张行动清单，一点生活的期待。</p><p>{mode === "demo" ? "这里使用独立的示例数据，关闭本次会话后可以重新体验。" : "记录保存在当前浏览器，不会自动同步到其他设备。可以随时导出一份记录。"}</p></div><details className="rules-disclosure"><summary>查看完整启程规则</summary><Rules mode={mode} /></details></>}
@@ -674,7 +674,7 @@ export default function Prototype() {
                   value={store.pity.pullsSinceFourPlus}
                   max={10}
                 />
-                <p className="field-help">休息、更换星愿或放下奖励，都不会清空已经积累的进度。</p>
+                <p className="field-help">休息、换星愿或放下奖励，保底仍会累计。</p>
                 <SectionLabel title="最近完成" />
                 {store.completions.slice(0, 6).map((c) => (
                   <div className="history-line" key={c.id}>
@@ -695,7 +695,7 @@ export default function Prototype() {
               if (!budgetDraft.trim()) { setError("请填写预算金额。"); return; }
               if (update((s) => saveBudget(s, Number(budgetDraft)))) { keyboard.hide(); setSheet(null); setToast("本月预算已保存"); }
             }}><Field label="本月预算（元）"><KeyboardInput inputMode="decimal" value={budgetDraft} onChange={(event) => setBudgetDraft(event.target.value)} autoFocus /></Field>
-              <p className="field-help">当前星愿需要 ¥{store.templates.find((t) => t.id === store.wishId)?.cost ?? 0}。这里只预留预算，不会产生支付。</p>
+              <p className="field-help">当前星愿 ¥{store.templates.find((t) => t.id === store.wishId)?.cost ?? 0}；仅作预算，不会支付。</p>
               <button type="submit" className="primary-button full-width">保存预算</button><button type="button" className="quiet-button full-width" onClick={() => { keyboard.hide(); setSheet(null); }}>取消</button>
             </form>}
           </div>
@@ -711,7 +711,6 @@ export default function Prototype() {
             }
           }}
           title={activeReward?.status === "pending" ? "这一程，留下了" : "这一份好运"}
-          description="随机只是建议，决定留给你。"
           snap={0.78}
         >
           {activeReward && (
@@ -1156,7 +1155,7 @@ function Journey({
             <h2>{reward.title}</h2>
             <p className="reward-description">{reward.description}</p>
             <p className="reward-origin">
-              来自「{reward.source}」{reward.isExample ? " · 示例奖励" : reward.rarity === 3 && " · +20 微光"}
+              来自「{reward.source}」{!reward.isExample && reward.rarity === 3 && " · +20 微光"}
             </p>
             {reward.status === "pending" ? (
               <>
@@ -1198,9 +1197,9 @@ function Journey({
                 )}
                 {!last && (
                   <p className="coin-invitation">
-                    想要，就收下。
+                    想要就收下；
                     <br />
-                    还拿不准，让硬币帮你听听自己的心意。
+                    拿不准，再问一次硬币。
                   </p>
                 )}
                 {reward.coins.length === 2 && !flipping && (
@@ -1208,7 +1207,7 @@ function Journey({
                     两次结果：
                     {reward.coins.map((c) => (c === "heads" ? "正面" : "反面")).join(" / ")}
                     <br />
-                    两次就够了，最后由你决定。
+                    两次为止，决定仍在你。
                   </p>
                 )}
                 <div className="journey-actions">
@@ -1240,10 +1239,10 @@ function Journey({
               <>
                 <p className="resolution">
                   {reward.status === "kept"
-                    ? "已收下。不必马上兑现，它会在奖励页等你。"
+                    ? "已收下，随时可以兑现。"
                     : reward.status === "released"
-                      ? "这次先放下。行动的价值与微光都已经留下。"
-                      : "这份奖励已经兑现，愿你享受其中。"}
+                      ? "已放下，行动与微光仍保留。"
+                      : "已兑现，慢慢享受。"}
                 </p>
                 <div className="journey-actions">
                   <button
@@ -1295,7 +1294,7 @@ function ActionForm({
       <Field label="今天做到哪里就够了">
         <KeyboardTextarea
           value={draft.minimum}
-          placeholder="写一个足够小、能完成的标准"
+          placeholder="写一个足够小的完成标准"
           onChange={(e) => setDraft({ ...draft, minimum: e.target.value })}
           required
         />
@@ -1359,7 +1358,7 @@ function ActionForm({
         />
       </Field>
       <p className="field-help">
-        小步骤只推进度，完成整条行动才获得 XP。正式模式下，新行动从次日开始可启程。
+        小步骤只记进度；完成行动获得 XP。新行动次日可启程。
       </p>
       <button className="primary-button full-width" type="submit">
         保存行动

@@ -39,3 +39,49 @@ Viewport: 390 × 844 CSS px for the mobile flow check. The app is intentionally 
 - The published `?demo=1` link was opened after deployment and showed the independent sample banner, six actions and 1600 example glow without console errors.
 
 final result: passed
+
+---
+
+# Design QA — silver-paper switch verification (2026-09-07)
+
+This section supersedes the immediately following earlier silver-paper report where it made visual claims from a scaled browser stage. The older report is retained above as history; the claims below use only this run's DOM, computed-style, screenshot, test-run, and source inspection evidence.
+
+## Browser flow and evidence
+
+Target: `http://127.0.0.1:4173/?demo=1` in Edge. The initial screenshot showed the demo banner, six open actions, 1600 example glow, and the Today/Rewards/Settings navigation. The browser viewport was a desktop-width stage (the `.paper-app` DOM rect measured approximately 1544 × 796 CSS px), so this run does **not** claim a 390 × 844 or physical-mobile viewport match. DOM dimensions, not screenshot scale, were used for geometry checks.
+
+1. Settings exposed exactly the three preference switches (`银白纸面`, `深色模式`, `减少动态效果`) plus export, experience/share, and about/rules actions.
+2. Clicking `银白纸面` changed `html[data-paper-style]` from `classic` to `silver` and its switch to `aria-checked=true` without changing demo content.
+3. Reloading preserved the silver selection. Switching `深色模式` produced the combination `data-paper-style=silver`, `data-paper-theme=dark`; computed `.bottom-sheet` background was `rgb(35, 39, 33)` when the rules and experience sheets were open.
+4. The About/Rules sheet opened, had a visible `关闭面板` control, and retained the concise demo-isolation copy. The Experience/Share sheet opened with `体验模式`, `先试一小段`, `补充示例奖励与微光`, `重新开始体验`, and `退出体验`; its dark silver sheet background was also `rgb(35, 39, 33)`.
+5. Toggling silver off and dark off yielded `data-paper-style=classic`, `data-paper-theme=light`; toggling dark on yielded `classic/dark` and computed app background `rgb(35, 39, 33)`. Reloading preserved the final classic/dark combination.
+6. The demo remained visibly labeled `体验模式 · 示例数据`, with six actions and 1600 example glow throughout. No app console warnings or errors were captured (`tab.dev.logs` returned `[]`).
+
+## Automated checks
+
+- `npm.cmd run check:runtime`: passed; 28 protected files intact.
+- `npm.cmd run build`: passed; TypeScript, Vite output, `dist/server/index.js`, and hosting metadata prepared.
+- `node --test tests/business.test.mjs tests/experience.test.mjs tests/model.test.mjs`: passed, 25/25.
+- `git diff --check`: passed (only normal CRLF conversion warnings from Git).
+- `npm.cmd run test:runtime`: 5/8 passed; 3 existing mobile-runtime fixture failures are unrelated to the theme switch. The failures were missing `keyboard-dock`/`device-picker` fixture elements in tests 6–8, not silver/classic or theme assertions.
+
+## CSS scope inspection
+
+Silver overrides are scoped through `html[data-paper-style="silver"]` (including the `:where(...)` variants), and the root sets the data attribute from the optional `store.silverPaper === true` boolean. No unscoped silver selector was found. One dead selector is worth cleanup later: `:where(html[data-paper-style="silver"]) html[data-paper-theme=dark] ...` cannot match because an `html` element cannot contain another `html`; the later top-level dark selector currently covers the same sheet behavior, so this is a low-risk P3 maintainability issue rather than a user-visible failure.
+
+## Verdict and limits
+
+Theme switch behavior, refresh persistence, all four classic/silver × light/dark combinations, portal sheets, concise copy, demo labeling, and runtime/build/business checks were verified. The silver theme is **functionally passed** in this run. A physical/mobile-size visual comparison and the failed unrelated runtime fixture tests remain unverified; do not treat this report as full mobile-runtime acceptance.
+
+final result: passed
+
+## Follow-up mobile and storage isolation evidence (2026-09-07)
+
+- A fresh Playwright context was run at an explicit `390 × 844` CSS viewport (device scale factor 1). Both before and after the switch, `window.innerWidth/innerHeight` were exactly `[390,844]` and the `.paper-app` rect was exactly `390 × 844`; this is the real DOM-size check, not the scaled CUA stage.
+- The accepted 390 × 844 screenshot is saved at `C:/Users/kingdom/Documents/Codex/2026-09-05/web-telegram-runner-telegram-30-telegram/work/paper-actions/qa-silver-390x844.png`. It shows the silver/light Settings page, enabled `银白纸面` switch, paper texture, concise rows, and bottom navigation without clipping.
+- In a fresh isolated context, a new personal page started as `classic/light` with no storage keys. Turning silver on created only `paper-actions:v1` in local storage. Opening `?demo=1` then started as independent `classic/light` while preserving the personal local key; demo changes created `paper-actions:demo:v1` in session storage. Returning to personal retained personal silver, demonstrating theme state does not cross between the two banks.
+- The CUA in-app tab was left at `http://127.0.0.1:4173/?demo=1`, Settings, silver/light, with switch value 1, and marked deliverable. Tab id: `1`.
+
+Updated verdict: mobile 390 × 844 DOM geometry, screenshot readability, personal default classic, and personal/demo theme-storage isolation are now tested. The remaining three runtime fixture failures listed above are unrelated protected-runtime test failures.
+
+Final implementation note: the dead nested-html selector noted above was removed and the scoped silver CSS was formatted. The timer field retains “0 为不计时” and the substeps field retains “可选”. This report verifies the theme-switch feature and responsive behavior; it does not claim pixel-identical reproduction of the generated concept.

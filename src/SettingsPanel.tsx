@@ -4,12 +4,15 @@ import {
   DownloadIcon,
   InfoCircledIcon,
   MoonIcon,
+  ReaderIcon,
   SymbolIcon,
 } from '@radix-ui/react-icons'
 import './settings-panels.css'
 
 export type SettingsPanelProps = {
   dark: boolean
+  silverPaper: boolean
+  onToggleSilverPaper: () => void
   reduced: boolean
   mode: 'personal' | 'demo'
   onToggleDark: () => void
@@ -21,13 +24,11 @@ export type SettingsPanelProps = {
 
 function SwitchRow({
   label,
-  description,
   checked,
   onToggle,
   icon,
 }: {
   label: string
-  description: string
   checked: boolean
   onToggle: () => void
   icon: ReactNode
@@ -37,7 +38,6 @@ function SwitchRow({
       <span className="settings-panel__icon" aria-hidden="true">{icon}</span>
       <span className="settings-panel__copy">
         <strong>{label}</strong>
-        <span>{description}</span>
       </span>
       <span className={`settings-panel__switch${checked ? ' is-on' : ''}`} aria-hidden="true">
         <span aria-hidden="true" />
@@ -48,12 +48,10 @@ function SwitchRow({
 
 function ActionRow({
   label,
-  description,
   icon,
   onClick,
 }: {
   label: string
-  description: string
   icon: ReactNode
   onClick: () => void
 }) {
@@ -62,7 +60,6 @@ function ActionRow({
       <span className="settings-panel__icon" aria-hidden="true">{icon}</span>
       <span className="settings-panel__copy">
         <strong>{label}</strong>
-        <span>{description}</span>
       </span>
       <ChevronRightIcon className="settings-panel__chevron" aria-hidden="true" />
     </button>
@@ -71,6 +68,8 @@ function ActionRow({
 
 export function SettingsPanel({
   dark,
+  silverPaper,
+  onToggleSilverPaper,
   reduced,
   mode,
   onToggleDark,
@@ -82,16 +81,15 @@ export function SettingsPanel({
   return (
     <section className="settings-panel" aria-label="设置选项">
       <div className="settings-panel__section" aria-label="设置选项">
+        <SwitchRow label="银白纸面" checked={silverPaper} onToggle={onToggleSilverPaper} icon={<ReaderIcon />} />
         <SwitchRow
           label="深色模式"
-          description="在较暗环境中阅读更舒适"
           checked={dark}
           onToggle={onToggleDark}
           icon={<MoonIcon />}
         />
         <SwitchRow
           label="减少动态效果"
-          description="减少页面切换与奖励动效"
           checked={reduced}
           onToggle={onToggleReduced}
           icon={<SymbolIcon />}
@@ -101,12 +99,11 @@ export function SettingsPanel({
       <div className="settings-panel__section" aria-label="设置选项">
         <ActionRow
           label={mode === 'demo' ? '导出体验记录' : '导出记录'}
-          description={mode === 'demo' ? '导出一份示例数据' : '保存一份可读的行动记录'}
           icon={<DownloadIcon />}
           onClick={onExport}
         />
-        <ActionRow label="体验与分享" description="了解示例流程，或分享给朋友" icon={<ChevronRightIcon />} onClick={onExperience} />
-        <ActionRow label="关于与规则" description="查看记录方式与奖励规则" icon={<InfoCircledIcon />} onClick={onAbout} />
+        <ActionRow label="体验与分享" icon={<ChevronRightIcon />} onClick={onExperience} />
+        <ActionRow label="关于与规则" icon={<InfoCircledIcon />} onClick={onAbout} />
       </div>
     </section>
   )

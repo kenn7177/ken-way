@@ -30,18 +30,18 @@ export function ExperiencePanel({ mode, demoUrl, localOnly, onEnter, onExit, onR
       <section className="experience-panel" aria-labelledby="experience-panel-title">
         <div className="experience-panel__heading">
           <span className="experience-panel__eyebrow">体验与分享</span>
-          <h2 id="experience-panel-title">把这一程交给朋友</h2>
-          <p>单独打开一份轻量示例，让对方感受一次从行动到收下奖励的过程。</p>
+          <h2 id="experience-panel-title">分享一次体验</h2>
+          <p>让朋友体验一次行动与奖励。</p>
         </div>
         <div className="experience-panel__card">
           <span className="experience-panel__card-label">示例体验</span>
-          <p>体验使用独立的示例数据，不会改变你的个人记录。</p>
+          <p>示例数据与个人记录分开。</p>
           <button className="experience-panel__primary" type="button" onClick={onEnter}><EnterIcon />进入体验</button>
         </div>
         <div className="experience-panel__share">
           <div>
             <strong>分享链接</strong>
-            <p>{localOnly ? '链接目前只在这台电脑上可用。' : '复制链接，邀请朋友一起试试。'}</p>
+            {localOnly && <p>链接目前只在这台电脑上可用。</p>}
           </div>
           <button className="experience-panel__outline" type="button" onClick={copyLink} aria-label="复制体验链接">
             {copyState === 'copied' ? <CheckIcon /> : <CopyIcon />}{copyState === 'copied' ? '已复制' : '复制链接'}
@@ -49,7 +49,7 @@ export function ExperiencePanel({ mode, demoUrl, localOnly, onEnter, onExit, onR
         </div>
         {(copyState === 'failed' || copyState === 'copied') && (
           <p className="experience-panel__status" role="status">
-            {copyState === 'copied' ? '链接已复制到剪贴板。' : '复制未完成，可以长按或手动选择下面的链接。'}
+            {copyState === 'copied' ? '链接已复制' : '复制未完成，可以长按或手动选择下面的链接。'}
           </p>
         )}
         {copyState === 'failed' && <p className="experience-panel__url" tabIndex={0}>{demoUrl}</p>}
@@ -63,11 +63,11 @@ export function ExperiencePanel({ mode, demoUrl, localOnly, onEnter, onExit, onR
       <div className="experience-panel__heading">
         <span className="experience-panel__eyebrow">体验模式</span>
         <h2 id="experience-panel-title">先试一小段</h2>
-        <p>这里的内容是示例数据，可以随时补充或重新开始，不会影响个人记录。</p>
+        <p>示例数据可补充或重置，不影响个人记录。</p>
       </div>
       <div className="experience-panel__demo-actions">
         <button className="experience-panel__primary experience-panel__primary--glow" type="button" onClick={onRefill}><ReloadIcon />补充示例奖励与微光</button>
-        <p>补充 3 / 4 / 5 示例奖励与 1600 示例微光，示例结果不会推进保底。</p>
+        <p>补充各星级奖励和 1600 示例微光，不推进保底。</p>
       </div>
       <div className="experience-panel__reset">
         {!confirming ? (
