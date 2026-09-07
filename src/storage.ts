@@ -11,7 +11,7 @@ function decodeStore(raw: string): Store {
     throw new Error('本地记录无法读取，请先导出备份，原记录不会被覆盖。');
   }
   // Legacy trial data remains readable; only the explicit app mode can enable demo privileges.
-  return { ...data, trial: false };
+  return { ...data, glowHistory: data.glowHistory ?? [], trial: false };
 }
 
 export function createStoreRepository(mode: AppMode, storage: { local: StoragePort; session: StoragePort }) {

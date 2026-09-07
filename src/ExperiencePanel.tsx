@@ -66,8 +66,8 @@ export function ExperiencePanel({ mode, demoUrl, localOnly, onEnter, onExit, onR
         <p>示例数据可补充或重置，不影响个人记录。</p>
       </div>
       <div className="experience-panel__demo-actions">
-        <button className="experience-panel__primary experience-panel__primary--glow" type="button" onClick={onRefill}><ReloadIcon />补充示例奖励与微光</button>
-        <p>补充各星级奖励和 1600 示例微光，不推进保底。</p>
+        <button className="experience-panel__primary experience-panel__primary--glow" type="button" onClick={onRefill}><ReloadIcon />补充示例奖励</button>
+        <p>补充各星级示例奖励，不推进保底。</p>
       </div>
       <div className="experience-panel__reset">
         {!confirming ? (

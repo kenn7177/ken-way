@@ -89,6 +89,16 @@ progress::-moz-progress-bar { background:var(--green); border-radius:8px; }
 .reward-balance { display:flex; justify-content:space-between; align-items:center; padding:22px 0; color:var(--muted); font-size:13px; }
 .reward-balance strong { color:var(--green); font-size:24px; font-weight:550; }
 .reward-balance small { font-size:12px; font-weight:400; }
+.reward-balance > span { color:var(--muted); font-family:var(--paper-serif); font-size:16px; }
+.glow-history { margin:0 0 18px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.glow-history-row { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:54px; padding:8px 0; border-bottom:1px solid var(--line); }
+.glow-history-row:last-child { border-bottom:0; }
+.glow-history-row > div { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.glow-history-row strong { overflow:hidden; color:var(--ink); font-size:14px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
+.glow-history-row small { color:var(--muted); font-size:12px; }
+.glow-history-row b { color:var(--green); font:600 15px ui-monospace,monospace; white-space:nowrap; }
+.reward-angel-stage { display:flex; align-items:center; justify-content:center; height:170px; margin:2px auto 8px; overflow:hidden; }
+.reward-angel { display:block; width:min(180px, 72%); height:170px; object-fit:contain; object-position:center; filter:drop-shadow(0 8px 12px rgb(43 40 28 / 14%)); }
 .reward-tabs { width:100%; margin-bottom:20px; }
 .reward-tabs button { flex:1; }
 .reward-tabs i { display:inline-block; width:4px; height:4px; border-radius:50%; background:var(--green); margin:0 0 6px 4px; }

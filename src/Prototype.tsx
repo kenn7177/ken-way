@@ -65,6 +65,20 @@ const labelForReward = {
   released: "已放下",
   redeemed: "已兑现",
 };
+const angelAssets = [
+  "/assets/angels/angel-01.png",
+  "/assets/angels/angel-02.png",
+  "/assets/angels/angel-03.png",
+  "/assets/angels/angel-04.png",
+  "/assets/angels/angel-05.png",
+  "/assets/angels/angel-06.png",
+] as const;
+
+function randomAngelAsset() {
+  const sample = new Uint32Array(1);
+  crypto.getRandomValues(sample);
+  return angelAssets[sample[0] % angelAssets.length];
+}
 
 export default function Prototype() {
   const [mode] = useState(() => modeFromSearch(window.location.search));
@@ -92,6 +106,10 @@ export default function Prototype() {
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    void navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => undefined);
   }, []);
   useEffect(() => {
     if (!toast) return;
@@ -338,7 +356,7 @@ export default function Prototype() {
                   <div className="week-stats">
                     <Metric value={weekly} label="本周完成" />
                     <Metric value={doneToday * 24} label="今日 XP" />
-                    <Metric value={store.glow} label="已有微光" />
+                    <Metric value={store.rewards.filter((r) => r.status === "pending").length} label="待决定" />
                   </div>
                   <SectionLabel title="按分组" detail={`${openCount} 件行动`} />
                   <div className="group-progress">
@@ -366,12 +384,13 @@ export default function Prototype() {
             )}
             {tab === "rewards" && (
               <>
-                <div className="reward-balance">
+                {rewardTab === "奖励池" && <div className="reward-balance">
+                  <span>当前微光</span>
                   <strong>
                     {store.glow}
                     <small> 微光</small>
                   </strong>
-                </div>
+                </div>}
                 <div className="segmented reward-tabs">
                   {["身边", "待决定", "过往", "奖励池"].map((t) => (
                     <button key={t} aria-pressed={t === rewardTab} onClick={() => setRewardTab(t)}>
@@ -380,8 +399,23 @@ export default function Prototype() {
                     </button>
                   ))}
                 </div>
-                {rewardTab === "奖励池" ? (
-                  <>
+               {rewardTab === "奖励池" ? (
+                 <>
+                    <SectionLabel title="获取记录" />
+                    <div className="glow-history">
+                      {(store.glowHistory ?? []).slice(0, 8).map((record) => (
+                        <div className="glow-history-row" key={record.id}>
+                          <div>
+                            <strong>{record.source}</strong>
+                            <small>{record.date.slice(5)}</small>
+                          </div>
+                          <b>+{record.amount}</b>
+                        </div>
+                      ))}
+                      {!store.glowHistory?.length && (
+                        <p className="field-help">完成三星奖励后，获取记录会出现在这里。</p>
+                      )}
+                    </div>
                     <button className="budget-summary" onClick={openBudget}><div><span>本月奖励预算</span><strong>¥{store.budget}</strong></div><span>编辑预算 <ChevronRightIcon /></span></button>
                   <SectionLabel title="当前星愿" />
                     {store.templates
@@ -688,7 +722,7 @@ export default function Prototype() {
             {sheet === "experience" && <ExperiencePanel mode={mode} demoUrl={demoUrl} localOnly={localOnly}
               onEnter={() => switchMode("demo")}
               onExit={() => mode === "demo" ? switchMode("personal") : setSheet(null)}
-              onRefill={() => { if (update((s) => refillDemoStore(s, mode, today))) setToast("已补充三份示例奖励和 1600 示例微光"); }}
+              onRefill={() => { if (update((s) => refillDemoStore(s, mode, today))) setToast("已补充三份示例奖励"); }}
               onReset={resetExperience} />}
             {sheet === "budget" && <form className="paper-form" onSubmit={(event) => {
               event.preventDefault();
@@ -1068,6 +1102,7 @@ function Journey({
   const lock = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const last = reward.coins.at(-1);
+  const [angelAsset] = useState(() => randomAngelAsset());
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -1147,15 +1182,13 @@ function Journey({
           </motion.div>
         ) : (
           <motion.div key="result" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-            <div className={`reward-stars rarity-${reward.rarity}`}>
-              {Array.from({ length: reward.rarity }, (_, i) => (
-                <StarIcon key={i} />
-              ))}
+            <div className="reward-angel-stage">
+              <img className="reward-angel" src={angelAsset} alt="" aria-hidden="true" />
             </div>
             <h2>{reward.title}</h2>
             <p className="reward-description">{reward.description}</p>
             <p className="reward-origin">
-              来自「{reward.source}」{!reward.isExample && reward.rarity === 3 && " · +20 微光"}
+              {reward.completionId !== "exchange" && <>来自「{reward.source}」</>}
             </p>
             {reward.status === "pending" ? (
               <>
@@ -1186,7 +1219,7 @@ function Journey({
                     <output aria-live="polite">
                       {flipping
                         ? "硬币翻转中…"
-                        : `${last === "heads" ? "正面 · 可以去" : "反面 · 先不去"}`}
+                        : `${last === "heads" ? "正面" : "反面"}`}
                     </output>
                     <p>
                       {flipping
@@ -1241,7 +1274,7 @@ function Journey({
                   {reward.status === "kept"
                     ? "已收下，随时可以兑现。"
                     : reward.status === "released"
-                      ? "已放下，行动与微光仍保留。"
+                      ? "已放下，行动记录仍保留。"
                       : "已兑现，慢慢享受。"}
                 </p>
                 <div className="journey-actions">
@@ -1454,8 +1487,6 @@ function Rules({ mode }: { mode: AppMode }) {
           ["五星软保底", "第 36 次起，每次 +10%"],
           ["五星硬保底", "第 45 次必得"],
           ["四星以上保底", "每 10 次至少一次"],
-          ["三星微光", "固定 +20"],
-          ["主动兑换四星", "800 微光，不推进保底"],
         ].map(([a, b]) => (
           <div key={a}>
             <dt>{a}</dt>
@@ -1467,7 +1498,7 @@ function Rules({ mode }: { mode: AppMode }) {
       <p>
         正反面各
         50%。最多掷两次，结果保存后不会重掷；无论硬币怎么说，都可以收下或放下。放下奖励不会扣除 XP
-        或微光。
+        。
       </p>
       <p>没有连续签到要求，没有错过惩罚，也不会让基本生活需求取决于随机。</p>
     </div>

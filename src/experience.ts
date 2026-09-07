@@ -23,6 +23,7 @@ export function initialDemoStore(day = dayKey()): Store {
   store.actions[1].minimum = '体验一次专注计时；开始后可以跳过等待。';
   store.templates.push({ id: 'demo-wish-2', title: '听一场期待已久的音乐会', description: '给喜欢的音乐，留一个现场的位置。', rarity: 5, minutes: 120, cost: 300, active: true });
   store.glow = 1600;
+  store.glowHistory = [{ id: id(), amount: 1600, source: '体验示例', date: day }];
   store.trial = false;
   const pending = examples(store, day);
   const previous = (reward: Reward, status: Reward['status']): Reward => ({ ...reward, id: id(), completionId: `demo-${id()}`, status, date: dayOffset(-1, day) });
@@ -32,7 +33,12 @@ export function initialDemoStore(day = dayKey()): Store {
 
 export function refillDemoStore(store: Store, mode: AppMode, day = dayKey()): Store {
   if (mode !== 'demo') throw new Error('示例补充只在体验模式中可用。');
-  return { ...store, glow: store.glow + 1600, rewards: [...examples(store, day), ...store.rewards] };
+  return {
+    ...store,
+    glow: store.glow + 1600,
+    glowHistory: [{ id: id(), amount: 1600, source: '体验补充', date: day }, ...(store.glowHistory ?? [])],
+    rewards: [...examples(store, day), ...store.rewards],
+  };
 }
 
 export function skipDemoTimer(store: Store, actionId: string, mode: AppMode, day = dayKey(), now = Date.now()): Store {

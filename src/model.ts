@@ -46,6 +46,12 @@ export type Reward = {
   source: string;
   isExample?: boolean;
 };
+export type GlowRecord = {
+  id: string;
+  amount: number;
+  source: string;
+  date: string;
+};
 export type Store = {
   version: 1;
   actions: Action[];
@@ -56,6 +62,7 @@ export type Store = {
   timers: Record<string, number>;
   xp: number;
   glow: number;
+  glowHistory?: GlowRecord[];
   pity: PityState;
   wishId: string;
   budget: number;
@@ -134,6 +141,7 @@ export function initialStore(day = dayKey()): Store {
     timers: {},
     xp: 0,
     glow: 0,
+    glowHistory: [],
     pity: { pullsSinceFive: 0, pullsSinceFourPlus: 0 },
     budget: 800,
     wishId: "wish-1",
@@ -265,6 +273,17 @@ export function drawReward(
   next.completions.find((c) => c.id === completionId)!.used = true;
   next.pity = result.pityAfter;
   next.glow += result.microGlowDelta;
+  if (result.microGlowDelta > 0) {
+    next.glowHistory = [
+      {
+        id: id(),
+        amount: result.microGlowDelta,
+        source: completion.title,
+        date: day,
+      },
+      ...(next.glowHistory ?? []),
+    ];
+  }
   next.rewards.unshift({
     id: id(),
     completionId,

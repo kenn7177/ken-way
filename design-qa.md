@@ -84,4 +84,24 @@ final result: passed
 
 Updated verdict: mobile 390 × 844 DOM geometry, screenshot readability, personal default classic, and personal/demo theme-storage isolation are now tested. The remaining three runtime fixture failures listed above are unrelated protected-runtime test failures.
 
+## Final regression — rewards, assets, PWA (2026-09-08)
+
+- `node --experimental-strip-types --test tests/business.test.mjs tests/experience.test.mjs`: 25/25 passed.
+- `npm.cmd run check:runtime`, `npm.cmd run build`, and `npm.cmd run test:sites`: all passed. Sites tests were 4/4.
+- `public/assets/angels/angel-01.png` through `angel-06.png` all exist and have alpha transparency. Dimensions: 01–04 and 06 are 1122 × 1402; 05 is 1086 × 1448.
+- Static HTTP checks from the local app returned 200 for `/manifest.webmanifest`, `/sw.js`, `/icons/icon-192.png`, and `/icons/icon-512.png`. Manifest parsing confirmed `display=standalone`, `start_url=/`, `scope=/`, and 192/512 PNG icons. In a browser context, Service Worker registration and controller were both present after load (`registered=true`, `controller=true`).
+- The fresh 390 × 844 UI context showed Today without a numeric glow balance; the Rewards page source/UI exposes the balance only in the `奖励池` tab (`当前微光`), while tab switching was exercised for `身边`, `待决定`, `过往`, and `奖励池`. No reward modal was fully reached through the seeded split-action path in this run because the intermediate completion action remained disabled until its step state changed; therefore modal-specific visual assertions are not marked as directly browser-passed here. Source inspection confirms the result branch has no `.reward-stars` render and uses only `正面`/`反面` for coin output, with no `可以去` or `先不去` strings in `Prototype.tsx`.
+- The CUA in-app tab remains at `http://127.0.0.1:4173/?demo=1`, Settings, silver/light, with the switch enabled, and was marked deliverable.
+
+Final regression verdict: build, business logic, assets, PWA endpoints/registration, storage normalization, and theme compatibility passed. Reward-modal interaction itself remains a named evidence limit rather than an unverified pass.
+
 Final implementation note: the dead nested-html selector noted above was removed and the scoped silver CSS was formatted. The timer field retains “0 为不计时” and the substeps field retains “可选”. This report verifies the theme-switch feature and responsive behavior; it does not claim pixel-identical reproduction of the generated concept.
+
+## Final visible reward flow correction (2026-09-08)
+
+- A fresh `?demo=1` CUA flow completed `出门走走，让身体醒过来`, opened the reward modal, and visibly showed one randomly selected supplied angel image in the former three-star slot.
+- The modal no longer rendered the three star icons or the phrases “可以去” / “先不去”; after the coin interaction the visible outcomes were the concise labels “正面” / “反面”. The reward source line remained, without an inline microglow amount.
+- The `奖励池` tab visibly showed `当前微光`, an `获取记录` section, and dated `+20` / `+1600` rows. The other Rewards tabs did not show the microglow balance, keeping the system implicit during ordinary interactions.
+- The same local browser session retained the silver-paper setting and stayed at `http://127.0.0.1:4173/?demo=1` for handoff.
+
+Final result: passed.
