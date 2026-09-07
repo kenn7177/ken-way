@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion, MotionConfig, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, MotionConfig, useIsPresent, useReducedMotion } from "motion/react";
 import {
   ArrowRightIcon,
   BackpackIcon,
@@ -50,11 +50,15 @@ import { ExperiencePanel } from "./ExperiencePanel";
 import { useAppStore } from "./useAppStore";
 import { modeFromSearch, refillDemoStore, skipDemoTimer } from "./experience";
 import { activateWish, saveBudget, type AppMode } from "./model";
+import telegramOrbit from "./tlottie-orbit.json";
+import { createTlottieAnimation } from "./tlottie";
 
 type Tab = "today" | "rewards" | "settings";
 type Filter = "全部" | "今天" | "未完成" | "已完成";
 type Sheet = "action" | "template" | "rules" | "progress" | "sort" | "experience" | "budget" | null;
 type Update = (change: (state: Store) => Store) => Store | null;
+type TabDirection = "forward" | "backward";
+const tabOrder: Tab[] = ["today", "rewards", "settings"];
 const labelForReward = {
   pending: "等你决定",
   kept: "还在身边",
@@ -66,6 +70,7 @@ export default function Prototype() {
   const [mode] = useState(() => modeFromSearch(window.location.search));
   const { store, current, error, setError, update, repository, exportRecord } = useAppStore(mode);
   const [tab, setTab] = useState<Tab>("today");
+  const [tabDirection, setTabDirection] = useState<TabDirection>("forward");
   const [filter, setFilter] = useState<Filter>("全部");
   const [group, setGroup] = useState<Group | null>(null);
   const [sort, setSort] = useState<"手动" | "优先级" | "日期">("手动");
@@ -123,6 +128,9 @@ export default function Prototype() {
   function openBudget() { setBudgetDraft(String(store.budget)); openSheet("budget"); }
   function navigate(next: Tab) {
     keyboard.hide();
+    if (next !== tab) {
+      setTabDirection(tabOrder.indexOf(next) > tabOrder.indexOf(tab) ? "forward" : "backward");
+    }
     setTab(next);
     setError("");
   }
@@ -255,8 +263,9 @@ export default function Prototype() {
           </div>
         </header>
         {mode === "demo" && <div className="demo-banner"><span>体验模式 · 示例数据</span><div><button onClick={() => openSheet("experience")}>体验工具</button><button onClick={() => switchMode("personal")}>退出</button></div></div>}
-        <MobileScroll key={tab} className="paper-scroll">
-          <main className="paper-content">
+        <MobileScroll className="paper-scroll">
+          <AnimatePresence initial={false} mode="wait">
+          <TabPanel key={tab} direction={tabDirection} reduced={reduced}>
             {error && !sheet && !journey && (
               <p className="paper-error" role="alert">
                 {error}
@@ -294,7 +303,8 @@ export default function Prototype() {
                             <ActionRow
                               key={action.id}
                               action={action}
-                            mode={mode}
+                              mode={mode}
+                              reduced={reduced}
                               store={store}
                               day={today}
                               now={clock}
@@ -495,7 +505,8 @@ export default function Prototype() {
             onToggleDark={() => update((s) => ({ ...s, dark: !s.dark }))}
             onToggleReduced={() => update((s) => ({ ...s, reduced: !s.reduced }))}
             onExport={exportData} onExperience={() => openSheet("experience")} onAbout={() => openSheet("rules")} />}
-        </main>
+          </TabPanel>
+          </AnimatePresence>
         </MobileScroll>
         {tab === "today" && (
           <div className="paper-composer">
@@ -540,7 +551,11 @@ export default function Prototype() {
               exit={{ opacity: 0 }}
               aria-live="polite"
             >
-              <CheckIcon />
+              <TelegramEmotion
+                reduced={reduced}
+                glyph={toastEmotion(toast)}
+                animated={isEmotionalToast(toast)}
+              />
               {toast}
             </motion.output>
           )}
@@ -753,9 +768,103 @@ export default function Prototype() {
   );
 }
 
+function isEmotionalToast(toast: string) {
+  return toast.startsWith("已完成") || toast.startsWith("已兑现") || toast.includes("已放入");
+}
+
+function toastEmotion(toast: string) {
+  if (toast.startsWith("已完成")) return "✦";
+  if (toast.startsWith("已兑现")) return "☺";
+  if (toast.includes("已放入")) return "★";
+  return "·";
+}
+
+function TelegramEmotion({
+  reduced,
+  glyph,
+  animated,
+}: {
+  reduced: boolean;
+  glyph: string;
+  animated: boolean;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!animated) return;
+    let cancelled = false;
+    let frame = 0;
+    let animation: Awaited<ReturnType<typeof createTlottieAnimation>> | undefined;
+
+    void createTlottieAnimation(telegramOrbit)
+      .then((next) => {
+        animation = next;
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext("2d");
+        if (cancelled || !canvas || !context) {
+          next.dispose();
+          return;
+        }
+
+        const size = Math.ceil(42 * Math.min(window.devicePixelRatio || 1, 2));
+        canvas.width = size;
+        canvas.height = size;
+        const paint = (time: number) => {
+          next.render(context, time / 1000 * next.frameRate, size, size);
+          if (!reduced && !cancelled) frame = requestAnimationFrame(paint);
+        };
+        paint(0);
+      })
+      .catch(() => {
+        // The glyph remains a graceful fallback if WebAssembly is unavailable.
+      });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      animation?.dispose();
+    };
+  }, [animated, reduced]);
+
+  return (
+    <span className={`telegram-emotion ${animated ? "is-animated" : ""}`} aria-hidden="true">
+      {animated && <canvas ref={canvasRef} />}
+      <span>{glyph}</span>
+    </span>
+  );
+}
+
+function TabPanel({
+  direction,
+  reduced,
+  children,
+}: {
+  direction: TabDirection;
+  reduced: boolean;
+  children: ReactNode;
+}) {
+  const isPresent = useIsPresent();
+  const distance = direction === "forward" ? 28 : -28;
+
+  return (
+    <motion.main
+      aria-hidden={!isPresent}
+      className="paper-content"
+      data-transition-phase={isPresent ? "active" : "leaving"}
+      initial={reduced ? false : { opacity: 0, x: distance }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={reduced ? { opacity: 1, x: 0 } : { opacity: 0, x: -distance * 0.58 }}
+      transition={{ duration: reduced ? 0 : 0.24, ease: [0.22, 0.8, 0.24, 1] }}
+    >
+      {children}
+    </motion.main>
+  );
+}
+
 function ActionRow({
   action,
   mode,
+  reduced,
   store,
   day,
   now,
@@ -766,6 +875,7 @@ function ActionRow({
 }: {
   action: Action;
   mode: AppMode;
+  reduced: boolean;
   store: Store;
   day: string;
   now: number;
@@ -781,20 +891,32 @@ function ActionRow({
   const end = store.timers[key];
   const time = end ? Math.max(0, Math.ceil((end - now) / 1000)) : action.minutes * 60;
   const waiting = action.minutes > 0 && (!end || time > 0);
+  const done = Boolean(c);
   const activeGrant = c?.eligible && !c.used && c.day === day;
   const reward = c && store.rewards.find((r) => r.completionId === c.id);
   return (
     <motion.article
       layout
-      transition={{ type: "spring", stiffness: 400, damping: 36 }}
+      initial={false}
+      animate={{ backgroundColor: done ? "rgba(47, 94, 74, 0.07)" : "rgba(47, 94, 74, 0)" }}
+      transition={reduced
+        ? { duration: 0 }
+        : {
+            layout: { type: "spring", stiffness: 400, damping: 36 },
+            backgroundColor: { duration: 0.22, ease: "easeOut" },
+          }}
       className={`action-row priority-${action.priority} ${c ? "is-done" : ""}`}
     >
       <div className="action-main">
-        <button
+        <motion.button
           className="task-check"
           aria-label={`完成 ${action.title}`}
-          aria-pressed={Boolean(c)}
-          disabled={Boolean(c)}
+          aria-pressed={done}
+          disabled={done}
+          initial={false}
+          animate={done && !reduced ? { scale: [1, 1.17, 1] } : { scale: 1 }}
+          whileTap={!done && !reduced ? { scale: 0.86 } : undefined}
+          transition={{ duration: reduced ? 0 : 0.26, ease: [0.22, 0.8, 0.24, 1] }}
           onClick={() => {
             if (action.steps.length || waiting) {
               setExpanded(true);
@@ -804,7 +926,7 @@ function ActionRow({
           }}
         >
           {c && <CheckIcon />}
-        </button>
+        </motion.button>
         <button
           className="action-copy"
           aria-expanded={expanded}

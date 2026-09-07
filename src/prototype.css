@@ -15,7 +15,8 @@
 .paper-app .icon-button:hover { background:var(--soft); }
 .paper-app .paper-scroll { top:calc(var(--paper-top) + 62px); bottom:calc(var(--mobile-safe-area-height) + 58px); background:var(--paper); }
 .paper-app[data-tab=today] .paper-scroll { bottom:calc(var(--mobile-safe-area-height) + 116px); }
-.paper-content { min-height:100%; padding:2px 16px 28px; animation:paper-enter 220ms ease-out; }
+.paper-content { min-height:100%; padding:2px 16px 28px; }
+.paper-content[data-transition-phase=leaving] { pointer-events:none; }
 .section-label { display:flex; align-items:center; gap:10px; min-height:30px; margin:14px 0 8px; color:var(--muted); font-size:12px; letter-spacing:1px; }
 .section-label small { font:inherit; letter-spacing:.3px; white-space:nowrap; }
 .section-label hr { margin:0; flex:1; border:0; border-top:1px solid var(--line); opacity:.6; }
@@ -80,6 +81,11 @@ progress::-moz-progress-bar { background:var(--green); border-radius:8px; }
 .paper-nav button[aria-current=page] { color:var(--green); }
 .nav-current { position:absolute; inset:1px 9px; background:var(--soft); border-radius:12px; }
 .paper-toast { position:absolute; z-index:40; left:18px; right:18px; display:flex; gap:10px; align-items:center; justify-content:center; padding:13px; border-radius:12px; background:#2d483a; color:#fff; font-size:13px; box-shadow:0 5px 15px #26392914; pointer-events:none; }
+.telegram-emotion { position:relative; display:grid; place-items:center; width:22px; height:22px; flex:0 0 22px; color:#fff9d2; font:700 18px/1 Georgia,'Songti SC',serif; }
+.telegram-emotion canvas,.telegram-emotion>span { grid-area:1 / 1; }
+.telegram-emotion canvas { width:30px; height:30px; opacity:.55; filter:saturate(.55) hue-rotate(82deg) brightness(1.55); }
+.telegram-emotion>span { position:relative; z-index:1; text-shadow:0 1px 4px #132c20aa; }
+.telegram-emotion:not(.is-animated) { color:#dce8da; font-size:17px; }
 .reward-balance { display:flex; justify-content:space-between; align-items:center; padding:22px 0; color:var(--muted); font-size:13px; }
 .reward-balance strong { color:var(--green); font-size:24px; font-weight:550; }
 .reward-balance small { font-size:12px; font-weight:400; }
@@ -138,7 +144,6 @@ progress::-moz-progress-bar { background:var(--green); border-radius:8px; }
 }
 .setup-steps { display:flex; gap:7px; margin:12px 0 24px; }.setup-steps span { flex:1; padding:7px; font-size:12px; border-bottom:2px solid var(--line); color:var(--muted); }.setup-steps .current { border-color:var(--green); color:var(--green); }.setup-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:26px; }
 .paper-dark .paper-header,.paper-dark .paper-scroll,.paper-dark .paper-nav,.paper-dark .paper-composer { color:var(--ink); }.paper-dark .icon-button,.paper-dark .segmented button,.paper-dark .group-progress button { color:var(--muted); }
-@keyframes paper-enter { from {opacity:.45;transform:translateY(6px);} to {opacity:1;transform:translateY(0);} }
 .paper-reduced *,[data-phone-screen]:has(.paper-reduced) .bottom-sheet * { animation:none!important; transition:none!important; }
 @media(prefers-reduced-motion:reduce) { .paper-app *, .journey-content * { animation:none!important; transition:none!important; } }
 
