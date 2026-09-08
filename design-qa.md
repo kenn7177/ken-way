@@ -105,3 +105,13 @@ Final implementation note: the dead nested-html selector noted above was removed
 - The same local browser session retained the silver-paper setting and stayed at `http://127.0.0.1:4173/?demo=1` for handoff.
 
 Final result: passed.
+
+## 启程后奖励抽屉交互优化（2026-09-08）
+
+- 参照用户提供的奖励抽屉截图，对同一 `?demo=1` 本地页面进行了窄屏复现：奖励图、标题、说明和首要按钮现在在首屏形成完整层级，未掷币时不再需要先滚动才能看到“收下这份奖励”。
+- 提示文案压缩为单行“想收下就确认；拿不准，可掷一次硬币。”，避免被固定操作区截断；两次结果也改为单行摘要。
+- 操作区采用轻量吸底反馈：未产生硬币结果时保持决策按钮可达；出现硬币结果后恢复内容流，避免吸底区遮住硬币、结果文案或标题。
+- 通过 `useLayoutEffect` 在奖励状态、掷币次数或揭示阶段切换时将抽屉滚动位置复位到内容起点，避免浏览器滚动锚定把标题顶出可视区域。
+- 交互回归：打开待决定奖励 → 首屏显示天使与两个决策按钮 → 掷硬币后显示硬币与“正面”结果 → 第二次掷币后显示“两次结果”和最终决策按钮；未观察到控制台错误。
+
+Final result: passed.

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, MotionConfig, useIsPresent, useReducedMotion } from "motion/react";
 import {
   ArrowRightIcon,
@@ -1103,6 +1103,11 @@ function Journey({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const last = reward.coins.at(-1);
   const [angelAsset] = useState(() => randomAngelAsset());
+  const contentRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const scroller = contentRef.current?.closest<HTMLElement>(".sheet-content");
+    scroller?.scrollTo({ top: 0, behavior: "auto" });
+  }, [reveal, reward.coins.length, reward.status]);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -1127,7 +1132,7 @@ function Journey({
     );
   }
   return (
-    <div className="journey-content">
+    <div className="journey-content" ref={contentRef}>
       {error && (
         <p className="paper-error" role="alert">
           {error}
@@ -1193,7 +1198,7 @@ function Journey({
             {reward.status === "pending" ? (
               <>
                 {(last || flipping) && (
-                  <div className="coin-result">
+                    <div className="coin-result" aria-busy={flipping}>
                     <motion.div
                       className="coin-material"
                       animate={
@@ -1229,18 +1234,11 @@ function Journey({
                   </div>
                 )}
                 {!last && (
-                  <p className="coin-invitation">
-                    想要就收下；
-                    <br />
-                    拿不准，再问一次硬币。
-                  </p>
+                  <p className="coin-invitation">想收下就确认；拿不准，可掷一次硬币。</p>
                 )}
                 {reward.coins.length === 2 && !flipping && (
                   <p className="coin-history">
-                    两次结果：
-                    {reward.coins.map((c) => (c === "heads" ? "正面" : "反面")).join(" / ")}
-                    <br />
-                    两次为止，决定仍在你。
+                    两次结果：{reward.coins.map((c) => (c === "heads" ? "正面" : "反面")).join(" / ")} · 决定仍在你。
                   </p>
                 )}
                 <div className="journey-actions">
