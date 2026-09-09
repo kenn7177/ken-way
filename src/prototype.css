@@ -302,3 +302,5 @@ html[data-paper-style="silver"] .paper-app .settings-panel__row { min-height:58p
 .journey-content:has(.coin-result) .coin-material { width:78px; height:78px; }
 .journey-content:has(.coin-result) .coin-result output { margin:5px 0 2px; font-size:18px; }
 .journey-content:has(.coin-result) .journey-actions .quiet-button { min-height:34px; padding:4px 12px; }
+
+.journey-content[data-journey-stage="undecided"] .reward-angel { height:132px; }
