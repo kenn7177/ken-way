@@ -109,6 +109,28 @@ export default function Prototype() {
     [],
   );
   useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (redeemId) {
+        setRedeemId(null);
+      } else if (journey) {
+        setJourney(null);
+        setReveal(false);
+        setError("");
+      } else if (sheet) {
+        setSheet(null);
+        setError("");
+      } else {
+        return;
+      }
+      keyboard.hide();
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [journey, keyboard, redeemId, sheet]);
+  useEffect(() => {
     const root = document.documentElement;
     const oldTheme = root.dataset.paperTheme;
     const oldStyle = root.dataset.paperStyle;
@@ -217,6 +239,8 @@ export default function Prototype() {
   const actions = store.actions.filter((a) => !a.archived);
   const doneToday = store.completions.filter((c) => c.day === today).length;
   const openCount = actions.filter((a) => !completed(store, a, today)).length;
+  const pendingRewardCount = store.rewards.filter((r) => r.status === "pending").length;
+  const keptRewardCount = store.rewards.filter((r) => r.status === "kept").length;
   const weekStart = dayOffset(-((new Date(`${today}T12:00`).getDay() + 6) % 7), today);
   const weekly = store.completions.filter((c) => c.day >= weekStart && c.day <= today).length;
   const filtered = actions.filter(
@@ -259,11 +283,18 @@ export default function Prototype() {
         className={`paper-app ${store.dark ? "paper-dark" : ""} ${reduced ? "paper-reduced" : ""}`}
       >
         <header className="paper-header">
-          <div>
-            <h1>
-              {tab === "today" ? "行间" : tab === "rewards" ? "留下来的好运" : "设置"}
-            </h1>
-            {tab !== "settings" && <p>{tab === "today" ? `${openCount} OPEN` : `${store.rewards.filter((r) => r.status === "kept").length} KEPT`}</p>}
+          <div className="destination-heading">
+            <span className="destination-kicker">
+              {tab === "today" ? "今天的行动" : tab === "rewards" ? "奖励与决定" : "偏好与记录"}
+            </span>
+            <h1>{tab === "today" ? "行间" : tab === "rewards" ? "留下来的好运" : "设置"}</h1>
+            <p>
+              {tab === "today"
+                ? `${openCount} 件待完成 · ${doneToday} 件已完成`
+                : tab === "rewards"
+                  ? `${pendingRewardCount} 待决定 · ${keptRewardCount} 身边`
+                  : "主题、动效与记录"}
+            </p>
           </div>
           <div className="header-tools">
             {tab === "today" && <IconButton label="查看行动进度" onClick={() => openSheet("progress")}><BarChartIcon /></IconButton>}
@@ -280,6 +311,31 @@ export default function Prototype() {
             )}
             {tab === "today" && (
               <>
+                <section className="today-status" aria-label="今天的状态">
+                  <button
+                    aria-pressed={filter === "未完成"}
+                    onClick={() => setFilter("未完成")}
+                  >
+                    <span>待完成</span>
+                    <strong>{openCount}</strong>
+                  </button>
+                  <button
+                    aria-pressed={filter === "已完成"}
+                    onClick={() => setFilter("已完成")}
+                  >
+                    <span>已完成</span>
+                    <strong>{doneToday}</strong>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRewardTab("待决定");
+                      navigate("rewards");
+                    }}
+                  >
+                    <span>待决定</span>
+                    <strong>{pendingRewardCount}</strong>
+                  </button>
+                </section>
                 <div className="filter-row">
                   <div className="segmented" aria-label="行动筛选">
                     {(["全部", "今天", "未完成", "已完成"] as Filter[]).map((f) => (
@@ -917,7 +973,7 @@ function ActionRow({
     <motion.article
       layout
       initial={false}
-      animate={{ backgroundColor: done ? "rgba(47, 94, 74, 0.07)" : "rgba(47, 94, 74, 0)" }}
+      animate={{ backgroundColor: done ? "rgba(123, 105, 166, 0.09)" : "rgba(123, 105, 166, 0)" }}
       transition={reduced
         ? { duration: 0 }
         : {
@@ -982,7 +1038,7 @@ function ActionRow({
           </button>
         ) : reward?.status === "pending" ? (
           <button className="journey-cta" onClick={() => onLaunch(c!.id)}>
-            继续
+            去决定
           </button>
         ) : (
           <IconButton label={`编辑 ${action.title}`} onClick={onEdit}>
