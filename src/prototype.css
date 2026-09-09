@@ -256,3 +256,30 @@ html[data-paper-style="silver"] .paper-app .settings-panel__row { min-height:58p
   .reward-angel-stage { height:148px; }
   .reward-angel { height:148px; }
 }
+
+
+/* Shared app-owned action semantics: one hierarchy across sheets and panels. */
+:is(.paper-app, .bottom-sheet) {
+  --action-primary-bg: var(--green);
+  --action-primary-fg: var(--paper);
+  --action-secondary-bg: var(--paper);
+  --action-secondary-fg: var(--ink);
+  --action-quiet-fg: var(--muted);
+}
+:is(.paper-app, .bottom-sheet) :is(.primary-button, .experience-panel__primary) { background:var(--action-primary-bg)!important; color:var(--action-primary-fg)!important; }
+:is(.paper-app, .bottom-sheet) :is(.outline-button, .experience-panel__outline) { border:1px solid var(--line)!important; background:var(--action-secondary-bg)!important; color:var(--action-secondary-fg)!important; }
+:is(.paper-app, .bottom-sheet) :is(.quiet-button, .experience-panel__quiet) { background:transparent!important; color:var(--action-quiet-fg)!important; }
+
+/* Reward Journey reweights the same decision instead of carrying every reveal element forward. */
+.journey-content[data-journey-stage="undecided"] { padding-top:4px; }
+.journey-content[data-journey-stage="undecided"] .reward-angel-stage { height:108px; }
+.journey-content[data-journey-stage="undecided"] .reward-angel { height:108px; }
+.journey-content[data-journey-stage="coin-result"] .reward-angel-stage, .journey-content[data-journey-stage="second-coin"] .reward-angel-stage { height:52px; margin-bottom:0; opacity:.72; }
+.journey-content[data-journey-stage="coin-result"] .reward-angel, .journey-content[data-journey-stage="second-coin"] .reward-angel { height:52px; }
+.journey-content[data-journey-stage="resolved"] .reward-angel-stage { height:72px; opacity:.8; }
+.journey-content[data-journey-stage="resolved"] .reward-angel { height:72px; }
+@media (max-width:420px) {
+  .journey-content[data-journey-stage="undecided"] .reward-angel-stage { height:94px; }
+  .journey-content[data-journey-stage="undecided"] .reward-angel { height:94px; }
+  .journey-content[data-journey-stage="undecided"] .journey-actions { margin-top:8px; }
+}
