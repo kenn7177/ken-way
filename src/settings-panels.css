@@ -24,3 +24,15 @@
 .experience-panel__share { display:flex; align-items:center; gap:12px; justify-content:space-between; padding:19px 0 4px; }.experience-panel__share>div { min-width:0; }.experience-panel__share strong { font-size:16px; font-weight:500; }.experience-panel__share p { margin:4px 0 0; color:var(--muted); font-size:13px; line-height:1.5; }
 .experience-panel__status { margin:9px 0 0; color:var(--accent); font-size:12px; }.experience-panel__url { margin:8px 0; padding:10px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:var(--paper); font-size:12px; line-height:1.6; overflow-wrap:anywhere; user-select:text; }
 .experience-panel__quiet { width:100%; margin-top:18px; color:var(--muted)!important; }.experience-panel__reset { margin-top:18px; }.experience-panel__reset>.outline-button { width:100%; }.experience-panel__confirm { display:flex; flex-direction:column; gap:6px; padding:14px; border:1px solid var(--line); border-radius:10px; background:var(--soft); }.experience-panel__confirm strong { font-size:15px; font-weight:500; }.experience-panel__confirm span { color:var(--muted); font-size:13px; }.experience-panel__confirm div { display:flex; gap:8px; margin-top:7px; }.experience-panel__confirm button { flex:1; min-height:44px; }
+
+
+/* Settings uses the same compact list language as Today and Rewards. */
+.settings-panel__section { border-radius:12px; background:color-mix(in srgb,var(--soft) 62%,var(--paper)); }
+.settings-panel__row { align-items:flex-start; min-height:70px; padding:12px; }
+.settings-panel__icon { margin-top:4px; color:var(--accent); }
+.settings-panel__copy { gap:3px; }
+.settings-panel__copy strong { font-size:15px; font-weight:600; }
+.settings-panel__copy span { display:block; color:var(--muted); font-size:12px; line-height:1.45; }
+.settings-panel__switch.is-on { background:var(--accent); }
+.experience-panel__card-label,.experience-panel__status { color:var(--accent); }
+.experience-panel__primary--glow { box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 13%,transparent),0 6px 15px color-mix(in srgb,var(--accent) 16%,transparent); }
