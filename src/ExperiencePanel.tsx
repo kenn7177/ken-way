@@ -36,14 +36,14 @@ export function ExperiencePanel({ mode, demoUrl, localOnly, onEnter, onExit, onR
         <div className="experience-panel__card">
           <span className="experience-panel__card-label">示例体验</span>
           <p>示例数据与个人记录分开。</p>
-          <button className="experience-panel__primary" type="button" onClick={onEnter}><EnterIcon />进入体验</button>
+          <button className="primary-button" type="button" onClick={onEnter}><EnterIcon />进入体验</button>
         </div>
         <div className="experience-panel__share">
           <div>
             <strong>分享链接</strong>
             {localOnly && <p>链接目前只在这台电脑上可用。</p>}
           </div>
-          <button className="experience-panel__outline" type="button" onClick={copyLink} aria-label="复制体验链接">
+          <button className="outline-button" type="button" onClick={copyLink} aria-label="复制体验链接">
             {copyState === 'copied' ? <CheckIcon /> : <CopyIcon />}{copyState === 'copied' ? '已复制' : '复制链接'}
           </button>
         </div>
@@ -53,7 +53,7 @@ export function ExperiencePanel({ mode, demoUrl, localOnly, onEnter, onExit, onR
           </p>
         )}
         {copyState === 'failed' && <p className="experience-panel__url" tabIndex={0}>{demoUrl}</p>}
-        <button className="experience-panel__quiet" type="button" onClick={onExit}><ExitIcon />返回设置</button>
+        <button className="quiet-button experience-panel__quiet" type="button" onClick={onExit}><ExitIcon />关闭</button>
       </section>
     )
   }
@@ -66,24 +66,24 @@ export function ExperiencePanel({ mode, demoUrl, localOnly, onEnter, onExit, onR
         <p>示例数据可补充或重置，不影响个人记录。</p>
       </div>
       <div className="experience-panel__demo-actions">
-        <button className="experience-panel__primary experience-panel__primary--glow" type="button" onClick={onRefill}><ReloadIcon />补充示例奖励</button>
+        <button className="primary-button experience-panel__primary--glow" type="button" onClick={onRefill}><ReloadIcon />补充示例奖励</button>
         <p>补充各星级示例奖励，不推进保底。</p>
       </div>
       <div className="experience-panel__reset">
         {!confirming ? (
-          <button className="experience-panel__outline" type="button" onClick={() => setConfirming(true)}>重新开始体验</button>
+          <button className="outline-button" type="button" onClick={() => setConfirming(true)}>重新开始体验</button>
         ) : (
           <div className="experience-panel__confirm" role="group" aria-describedby="experience-panel-reset-description">
             <strong>确认重新开始体验？</strong>
             <span id="experience-panel-reset-description">当前示例数据会被清空。</span>
             <div>
-              <button className="experience-panel__outline" type="button" onClick={() => setConfirming(false)}>取消</button>
-              <button className="experience-panel__primary" type="button" onClick={() => { setConfirming(false); onReset() }}>确认重新开始</button>
+              <button className="outline-button" type="button" onClick={() => setConfirming(false)}>取消</button>
+              <button className="primary-button" type="button" onClick={() => { setConfirming(false); onReset() }}>确认重新开始</button>
             </div>
           </div>
         )}
       </div>
-      <button className="experience-panel__quiet" type="button" onClick={onExit}><ExitIcon />退出体验</button>
+      <button className="quiet-button experience-panel__quiet" type="button" onClick={onExit}><ExitIcon />退出体验</button>
     </section>
   )
 }
